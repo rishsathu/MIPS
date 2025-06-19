@@ -1,0 +1,1043 @@
+/////////////////////////////////////////
+  name input
+
+
+.data
+prompt:     .asciiz "Enter your name: "      # Prompt message
+hello:      .asciiz "Hello "                 # Hello message
+newline:    .asciiz "\n"                     # For new line
+name:       .space 32                        # Reserve 32 bytes for user input
+
+.text
+.globl main
+main:
+    # Print the prompt message
+    li $v0, 4
+    la $a0, prompt
+    syscall
+
+    # Read the user's input (string)
+    li $v0, 8
+    la $a0, name      # Address to store input
+    li $a1, 32        # Maximum number of characters to read
+    syscall
+
+    # Print "Hello "
+    li $v0, 4
+    la $a0, hello
+    syscall
+
+    # Print user's name
+    li $v0, 4
+    la $a0, name
+    syscall
+
+    # Print newline for clean output
+    li $v0, 4
+    la $a0, newline
+    syscall
+
+    # Exit program
+    li $v0, 10
+    syscall
+
+
+
+
+
+/////////////////////////////subprograms-->
+
+.data
+msg_prompt: .asciiz "Enter an integer: "
+msg_string: .asciiz "This is a test string."
+
+
+.text
+#.globl  print_string, prompt_int, print_int, print_tab,exit_program
+
+
+print_string:
+    li $v0, 4
+    syscall
+    jr $ra
+
+prompt_int:
+    li $v0, 4
+    la $a0, msg_prompt
+    syscall
+    li $v0, 5
+    syscall
+    move $t0, $v0
+    jr $ra
+
+print_int:
+    li $v0, 1
+    move $a0, $t0
+    syscall
+    jr $ra
+
+print_tab:
+    li $v0, 11
+    li $a0, 9
+    syscall
+    jr $ra
+    
+exit_program:
+    li $v0, 10
+    syscall
+
+
+////////////////////////////Q2 19/20   --> mile/gallon
+
+
+.text
+.globl main
+
+main:
+    # Prompt for miles
+    li $v0, 4
+    la $a0, prompt1
+    syscall
+    
+
+    li $v0, 5
+    syscall
+    move $t1, $v0         
+    
+
+    li $v0, 4
+    la $a0, prompt2
+    syscall
+    
+
+    li $v0, 5
+    syscall
+    move $t2, $v0          
+    
+    # Convert inputs to floating-point
+    mtc1 $t1, $f0          
+    cvt.s.w $f0, $f0      
+    mtc1 $t2, $f1          
+    cvt.s.w $f1, $f1       
+    
+    # Perform floating-point division
+    div.s $f12, $f0, $f1  
+    
+    # Output result message
+    li $v0, 4
+    la $a0, output
+    syscall
+    
+    # Output float result (single precision)
+    li $v0, 2              
+    syscall                
+    
+    # Exit program
+    li $v0, 10
+    syscall
+    
+.data
+    prompt1: .asciiz "Enter the number of miles driven: "
+    prompt2: .asciiz "Enter the number of gallons used: "
+    output: .asciiz "Your mpg = "
+
+
+
+
+
+
+
+
+Q3//////////////////////////// sub to Q1
+
+
+.data
+even_msg: .asciiz "The number is Even.\n"
+odd_msg:  .asciiz "The number is Odd.\n"  
+
+
+.text
+#.globl main
+
+main:
+    jal prompt_int
+
+    rem $t1, $t0, 2
+    beqz $t1, is_even
+    j is_odd
+
+is_even:
+    la $a0, even_msg
+    jal print_string
+    j end_program
+
+is_odd:
+    la $a0, odd_msg
+    jal print_string
+    j end_program
+
+end_program:
+    jal exit_program
+    
+ 
+    
+.include "Q1_util.asm"
+
+
+
+
+
+Q4//////////////////  calculator
+
+
+.data
+   prompt1: .asciiz"Enter Number 1:"
+   prompt2: .asciiz"Enter Number 2:"
+   menu: .asciiz"\nMenu\n1-Addition\n2-substraction\n3-Multiplication\n4-Division\n5-Modulus"
+   select_op: .asciiz"select the operation:"
+   result:      .asciiz " = "
+    newline:    .asciiz "\n"
+    error_msg:  .asciiz "Error: Division by zero!\n"
+    num1:       .word 0
+    num2:       .word 0
+    op:         .word 0
+.text
+.globl main
+
+main:
+    li $v0,4
+    la $a0,prompt1
+    syscall
+    
+    li $v0,5
+    syscall
+    sw $s1,num1
+    
+    li $v0,4
+    la $a0,prompt2
+    syscall
+    
+    li $v0,5
+    syscall
+    sw $s2,num2
+    
+    li $v0,4
+    la $a0,menu
+    syscall
+    
+    li $v0,4
+    la $a0,select_op
+    syscall
+    
+    li $v0,5
+    syscall
+    sw $v0,op
+    
+    lw $t0,num1
+    lw $t1,num2
+    lw $t2,op
+    
+    li $v0, 1
+    move $a0, $t0
+    syscall
+    
+    li $v0, 11
+    
+    beq $t2, 1, print_plus
+    beq $t2, 2, print_minus
+    beq $t2, 3, print_mult
+    beq $t2, 4, print_div
+    beq $t2, 5, print_mod
+    
+print_plus:
+    li $a0, '+'
+    j print_op_done
+print_minus:
+    li $a0, '-'
+    j print_op_done
+print_mult:
+    li $a0, 'x'
+    j print_op_done
+print_div:
+    li $a0, '/'
+    j print_op_done
+print_mod:
+    li $a0, '%'
+    
+print_op_done:
+    syscall
+    
+    li $v0, 1
+    move $a0, $t1
+    syscall
+    
+    li $v0, 4
+    la $a0, result
+    syscall
+    
+    # Perform the selected operation
+    beq $t2, 1, addition
+    beq $t2, 2, subtraction
+    beq $t2, 3, multiplication
+    beq $t2, 4, division
+    beq $t2, 5, modulus
+    
+addition:
+    add $a0, $t0, $t1
+    j print_result
+    
+subtraction:
+    sub $a0, $t0, $t1
+    j print_result
+    
+multiplication:
+    mul $a0, $t0, $t1
+    j print_result
+    
+division:
+    beq $t1, 0, division_error
+    div $a0, $t0, $t1
+    j print_result
+    
+modulus:
+    beq $t1, 0, division_error
+    rem $a0, $t0, $t1
+    j print_result
+    
+division_error:
+    li $v0, 4
+    la $a0, error_msg
+    syscall
+    j exit
+    
+print_result:
+    li $v0, 1
+    syscall
+    j exit
+    
+exit:
+    li $v0, 4
+    la $a0, newline
+    syscall
+    
+    li $v0, 10
+    syscall
+    
+    
+    
+
+
+
+
+
+
+18/19   
+Q1---> sum,sub,div, mul
+
+.text
+.globl main
+
+main:
+
+   li $v0,4
+   la $a0,prompt1
+   syscall
+   
+   li $v0,5
+   syscall
+   move $s1,$v0
+
+   li $v0,4
+   la $a0,prompt2
+   syscall
+   
+   li $v0,5
+   syscall
+   move $s2,$v0
+   
+   add $t1,$s1,$s2
+   sub $t2,$s1,$s2
+   mul $t3,$s1,$s2
+   div $t4,$s1,$s2
+   
+   li $v0,4
+   la $a0,Addition
+   syscall
+   
+   li $v0,1
+   move $a0,$t1
+   syscall
+   
+   
+   li $v0,4
+   la $a0,Substraction
+   syscall
+   
+   li $v0,1
+   move $a0,$t2
+   syscall
+   
+   
+   li $v0,4
+   la $a0,Multiplication
+   syscall
+   
+   li $v0,1
+   move $a0,$t3
+   syscall
+   
+   
+   li $v0,4
+   la $a0,Division
+   syscall
+   
+   li $v0,1
+   move $a0,$t4
+   syscall
+   
+                                                                                                   
+   li $v0,10
+   syscall
+   
+ .data
+     prompt1: .asciiz"Enter the first Number:"
+     prompt2: .asciiz"Enter the second Number:"
+     Addition: .asciiz "Addition on that numbers:"
+    Substraction: .asciiz "\nsubstraction on that numbers:"
+    Multiplication: .asciiz "\nmultiplication on that numbers:"
+     Division: .asciiz "\ndivision on that numbers:"       
+
+
+
+
+//////////Q2----> an assembly language program to print the number 9 to 1 using loops.
+
+
+.text
+main:
+
+li $t0,9
+
+loop:
+li $v0,1
+move $a0,$t0
+syscall
+
+addi $t0,$t0,-1
+
+#print newline
+li $v0,4
+la $a0,newline
+syscall
+
+bgtz $t0,loop
+
+end_loop:
+li $v0,10
+syscall
+
+.data
+ newline: .asciiz"\n"
+
+
+
+
+Q3-->
+
+.text
+main:
+
+li $v0,4
+la $a0,prompt01
+syscall
+
+li $v0,5
+syscall
+move $t0,$v0
+
+li $v0,4
+la $a0,prompt02
+syscall
+
+li $v0,5
+syscall
+move $t1,$v0
+
+li $v0,4
+la $a0,prompt03
+syscall
+
+li $v0,5
+syscall
+move $t2,$v0
+
+#assume first number is minimum
+move $t3,$t0
+
+#compare with second number
+blt $t1,$t3,update_min1
+
+update_min1:
+move $t3,$t1
+j check_third
+
+update_min2:
+move $t3,$t2
+
+check_third:
+blt $t2,$t3,update_min2
+j print_result
+
+print_result:
+li $v0,4
+la $a0,result
+syscall
+
+li $v0,1
+move $a0,$t3
+syscall
+
+
+li $v0,10
+syscall
+
+.data
+prompt01: .asciiz"Enter num1: "
+prompt02: .asciiz"Enter num2: "
+prompt03: .asciiz"Enter num3: "
+result: .asciiz"The minimum is: "
+
+
+
+
+
+//////////////////////////Q4--->factorial
+
+
+.text
+main:
+
+li $v0,4
+la $a0,prompt
+syscall
+
+li $v0,5
+syscall
+move $t0,$v0   #$t0=n
+
+li $t1,1       #factorial start from 1
+li $t2,1       #t2 loop counter i=1
+
+loop:
+sle $t3,$t2,$t0
+beqz $t3,done
+
+mul $t1,$t1,$t2
+addi $t2,$t2,1
+j loop
+
+done:
+li $v0,4
+la $a0,result
+syscall
+
+li $v0,1
+move $a0,$t1
+syscall
+
+li $v0,10
+syscall
+
+.data
+prompt:  .asciiz"Enter num n: "
+result:  .asciiz"The factorial is: "
+
+
+
+
+//////////////////////////////////problem sheeet  5𝑥2 + 2𝑥 + 3.
+
+.text
+.globl main
+
+main:
+    li $v0 , 4
+    la $a0 , prompt
+    syscall
+    
+    li $v0 , 5
+    syscall
+    move $t0,$v0
+    
+    mul $t1,$t0,$t0
+    li $t2,5
+    mul $t1,$t1,$t2
+    
+    li $t2,2
+    mul $t3,$t0,$t2
+    
+    li $t4,3
+    
+    add $t5,$t1,$t3
+    add $t5,$t5,$t4
+    
+    li $v0,4
+    la $a0,result_msg
+    syscall
+    
+    li $v0,1
+    move $a0,$t5
+    syscall
+    
+    li $v0,10
+    syscall
+    
+    
+.data
+     
+     prompt: .asciiz"Enter the value:"
+     result_msg: .asciiz"the result is:"
+     
+    
+
+//////////////////////////////////////////5𝑥 + 3𝑦 + z
+
+
+.text
+.globl main
+
+main:
+
+    li $v0,4
+    la $a0,prompt1
+    syscall
+    
+    li $v0,5
+    syscall
+    move $s0,$v0
+    
+    li $v0,4
+    la $a0,prompt2
+    syscall
+    
+    li $v0,5
+    syscall
+    move $s1,$v0
+    
+    li $v0,4
+    la $a0,prompt3
+    syscall
+    
+    li $v0,5
+    syscall
+    move $s2,$v0
+    
+    li $s3,5
+    mul $t1,$s0,$s3
+    
+    li $s4,3
+    mul $t2,$s1,$s4
+    
+    add $t3,$t1,$t2
+    add $t3,$t3,$s2
+    
+    li $v0,4
+    la $a0,result
+    syscall
+    
+    li $v0,1
+    move $a0,$t3
+    syscall
+    
+    li $v0,10
+    syscall
+    
+.data 
+    prompt1: .asciiz "enter X value:"
+    prompt2: .asciiz "enter y value:"
+    prompt3: .asciiz "enter z value:"
+    result: .asciiz "this the value:"    
+
+
+
+
+
+
+////////////////////////////////////////////((5𝑥 + 3𝑦 + 𝑧) / 2) ∗ 3
+
+
+
+.text
+.globl main
+
+main:
+   li $v0,4
+   la $a0,prompt1
+   syscall
+   
+   li $v0,5
+   syscall
+   move $s1,$v0
+   
+   li $v0,4
+   la $a0,prompt2
+   syscall
+   
+   li $v0,5
+   syscall
+   move $s2,$v0
+   
+   li $v0,4
+   la $a0,prompt3
+   syscall
+   
+   li $v0,5
+   syscall
+   move $s3,$v0
+   
+   mul $t0,$s1,5
+   mul $t1,$s2,3
+   
+   add $t2,$t0,$t1
+   add $t2,$t2,$s3
+   
+   div $t3,$t2,2
+   
+   mul $t4,$t3,3
+   
+   li $v0,4
+   la $a0,value
+   syscall
+   
+   li $v0,1
+   move $a0,$t4
+   syscall
+   
+   li $v0,10
+   syscall
+   
+  .data  
+      prompt1: .asciiz "Enter x value:" 
+      prompt2: .asciiz "Enter y value:"
+      prompt3: .asciiz "Enter z value:" 
+      value: .asciiz "this the value"
+   
+
+
+
+
+
+
+//////////////////////.Implement the rem operator using only the div, mfhi, and mflo operators
+
+
+.data
+    prompt_a:   .asciiz "Enter dividend (a): "
+    prompt_b:   .asciiz "Enter divisor (b): "
+    result_msg: .asciiz "a % b = "
+    newline:    .asciiz "\n"
+
+.text
+.globl main
+
+main:
+    # Prompt and read a
+    li $v0, 4
+    la $a0, prompt_a
+    syscall
+    li $v0, 5
+    syscall
+    move $t0, $v0       # $t0 = a
+
+    # Prompt and read b
+    li $v0, 4
+    la $a0, prompt_b
+    syscall
+    li $v0, 5
+    syscall
+    move $t1, $v0       # $t1 = b
+
+    # Call rem function
+    move $a0, $t0       # Set argument a
+    move $a1, $t1       # Set argument b
+    jal rem             # Call rem function
+    move $t2, $v0       # $t2 = result
+
+    # Print result
+    li $v0, 4
+    la $a0, result_msg
+    syscall
+    li $v0, 1
+    move $a0, $t2
+    syscall
+    li $v0, 4
+    la $a0, newline
+    syscall
+
+    # Exit
+    li $v0, 10
+    syscall
+
+# REM function implementation
+# Input: $a0 = a, $a1 = b
+# Output: $v0 = a % b
+rem:
+    div $a0, $a1       # HI gets a%b, LO gets a/b
+    mfhi $v0           # Move remainder to $v0
+    jr $ra             # Return to caller
+
+
+
+
+
+
+
+
+////////////////////////////////////
+
+
+
+
+main{
+int i = prompt("Enter your number");
+int j = i % 2;
+print("A result of 0 is even, a result of 1 is odd: result = " +
+j;
+}
+
+//////////////////////////////////
+
+.text
+.globl main
+
+main:
+
+    li $v0,4
+    la $a0,prompt
+    syscall
+    
+    li $v0,5
+    syscall
+    move $t0,$v0
+    
+    li $t1,2
+    div $t2,$t0,$t1
+    mfhi $t3
+    
+    li $v0,4
+    la $a0,value 
+    syscall
+    
+    li $v0,1
+    move $a0,$t2
+    syscall
+    
+    li $v0,4
+    la $a0,remainder
+    syscall
+    
+    li $v0,1
+    move $a0,$t3
+    syscall
+    
+    li $v0,10
+    syscall
+    
+    .data
+    
+      prompt:  .asciiz "Enter your number:"
+      value : .asciiz  "this the valu:"
+      remainder: .asciiz "\nthis is the remainder:"
+    
+    
+    
+
+
+
+/////////////////////////////////////////////////////////////////////
+Surface Area = 2(length x width + length x height + width x height),
+Area = length x width x height
+
+
+
+
+
+
+
+
+.text
+.globl main
+
+main:
+    li $v0,4
+    la $a0,prompt1
+    syscall
+    
+    li $v0,5
+    syscall
+    move $t1,$v0
+    
+    li $v0,4
+    la $a0,prompt2
+    syscall
+    
+    li $v0,5
+    syscall
+    move $t2,$v0
+    
+    li $v0,4
+    la $a0,prompt3
+    syscall
+    
+    li $v0,5
+    syscall
+    move $t3,$v0
+    
+    mul $s1,$t1,$t2
+    mul $s2,$t1,$t3
+    mul $s3,$t2,$t3
+    
+    add $s4,$s1,$s2
+    add $s4,$s4,$s3
+    
+    li $s5,2
+    mul $s6,$s4,$s5
+    
+    mul $s7,$t1,$t2
+    mul $s7,$s7,$t3
+    
+    li $v0,4
+    la $a0,Surfacearea
+    syscall
+    
+    li $v0,1
+    move $a0,$s6
+    syscall
+    
+    li $v0,4
+    la $a0,Area
+    syscall
+    
+    li $v0,1
+    move $a0,$s7
+    syscall
+    
+    li $v0,10
+    syscall
+    
+ .data 
+    prompt1: .asciiz "Enter the length:"   
+    prompt2: .asciiz "Enter the Width:"
+    prompt3: .asciiz "Enter the heigth:"
+    Surfacearea: .asciiz "surface area is:"
+    Area :.asciiz "\nArea is:"
+    
+
+
+
+
+
+
+/////////////////////////////////////////////
+
+: s = (a + b) – (c + 101), where a, b
+
+
+
+
+
+.text
+.globl main
+
+main:
+    li $v0,4
+    la $a0,prompt1
+    syscall
+    
+    li $v0,5
+    syscall
+    move $t1,$v0
+    
+    li $v0,4
+    la $a0,prompt2
+    syscall
+    
+    li $v0,5
+    syscall
+    move $t2,$v0
+    
+    li $v0,4
+    la $a0,prompt3
+    syscall
+    
+    li $v0,5
+    syscall
+    move $t3,$v0
+    
+    add $s1,$t1,$t2
+    addi $s2,$t3,101
+    
+    sub $s0,$s1,$s2
+    
+    li $v0,4
+    la $a0,value
+    syscall
+    
+    li $v0,1
+    move $a0,$s0
+    syscall
+    
+    li $v0,10
+    syscall
+    
+    .data
+       prompt1: .asciiz "Enter the valu of a:"
+       prompt2: .asciiz "Enter the valu of b:"
+       prompt3: .asciiz "Enter the valu of c:"
+       value: .asciiz "this the value of s:"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
