@@ -1,3 +1,86 @@
+/////////////////////////////////////swap
+.text
+.globl main
+
+main:
+    # Prompt for side A
+    li $v0, 4
+    la $a0, prompt
+    syscall
+    li $v0, 5
+    syscall
+    move $s0, $v0          # Store side A in $s0
+
+    # Prompt for side B
+    li $v0, 4
+    la $a0, prompt
+    syscall
+    li $v0, 5
+    syscall
+    move $s1, $v0          # Store side B in $s1
+
+    # Prompt for side C
+    li $v0, 4
+    la $a0, prompt
+    syscall
+    li $v0, 5
+    syscall
+    move $s2, $v0          # Store side C in $s2
+
+    # Find the hypotenuse (longest side)
+    move $t0, $s0          # Assume A is hypotenuse
+    bge $t0, $s1, check_C  # If A >= B, check C
+    move $t0, $s1          # Else B is hypotenuse
+    move $s1, $s0          # Move A to compare with C
+
+check_C:
+    bge $t0, $s2, calc     # If current hyp >= C, skip
+    move $t0, $s2          # Else C is hypotenuse
+
+calc:
+    # Calculate squares
+    mul $t1, $s0, $s0      # A²
+    mul $t2, $s1, $s1      # B²
+    mul $t3, $s2, $s2      # C²
+
+    # Check Pythagorean theorem
+    beq $t0, $s0, check_BC
+    beq $t0, $s1, check_AC
+    # Else hypotenuse is C, check A² + B² = C²
+    add $t4, $t1, $t2
+    beq $t4, $t3, is_right
+    j not_right
+
+check_BC:
+    add $t4, $t2, $t3
+    beq $t4, $t1, is_right
+    j not_right
+
+check_AC:
+    add $t4, $t1, $t3
+    beq $t4, $t2, is_right
+
+not_right:
+    li $v0, 4
+    la $a0, no_msg
+    syscall
+    j exit
+
+is_right:
+    li $v0, 4
+    la $a0, yes_msg
+    syscall
+
+exit:
+    li $v0, 10
+    syscall
+
+.data
+prompt: .asciiz "Enter a side length: "
+yes_msg: .asciiz "Right triangle!\n"
+no_msg: .asciiz "Not a right triangle.\n"
+
+
 ////////////////////////////////////////right triangle
 .data
 prompt:     .asciiz "Enter the lengths of three sides of a triangle: "
