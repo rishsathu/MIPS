@@ -1,3 +1,82 @@
+////////////////////////////////////////right triangle
+.data
+prompt:     .asciiz "Enter the lengths of three sides of a triangle: "
+result_yes: .asciiz "The triangle is a right triangle.\n"
+result_no:  .asciiz "The triangle is not a right triangle.\n"
+
+.text
+.globl main
+
+main:
+    # Print prompt
+    li $v0, 4
+    la $a0, prompt
+    syscall
+
+    # Read three integers (side lengths)
+    li $v0, 5
+    syscall
+    move $s0, $v0          # $s0 = a
+    
+    li $v0, 5
+    syscall
+    move $s1, $v0          # $s1 = b
+    
+    li $v0, 5
+    syscall
+    move $s2, $v0          # $s2 = c
+
+    # Find the hypotenuse (longest side)
+    move $t0, $s0          # assume a is largest
+    move $t1, $s1          # b and c are other sides
+    move $t2, $s2
+    
+    # Compare a and b
+    ble $s0, $s1, check_b
+    j check_c
+    
+check_b:
+    move $t0, $s1          # b is largest
+    move $t1, $s0          # a and c are other sides
+    move $t2, $s2
+    j compare_c
+    
+check_c:
+    ble $s0, $s2, set_c
+    j compare_sides
+    
+set_c:
+    move $t0, $s2          # c is largest
+    move $t1, $s0          # a and b are other sides
+    move $t2, $s1
+    
+compare_sides:
+    # Calculate squares
+    mul $t3, $t1, $t1      # $t3 = side1^2
+    mul $t4, $t2, $t2      # $t4 = side2^2
+    add $t5, $t3, $t4      # $t5 = side1^2 + side2^2
+    
+    mul $t6, $t0, $t0      # $t6 = hypotenuse^2
+    
+    # Compare sum of squares to hypotenuse square
+    beq $t5, $t6, is_right_triangle
+    
+    # Not a right triangle
+    li $v0, 4
+    la $a0, result_no
+    syscall
+    j exit
+    
+is_right_triangle:
+    li $v0, 4
+    la $a0, result_yes
+    syscall
+    
+exit:
+    li $v0, 10             # Exit program
+    syscall
+
+
 /////////////////////////////////////////
   name input
 
