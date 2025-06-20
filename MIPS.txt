@@ -1,3 +1,58 @@
+////////////////////////////////pattern
+
+.text
+.globl main
+
+main:
+    li $t0, 1
+    
+loop:
+    bgt $t0, 5, exit      
+    
+    # Print spaces
+    li $t1, 5              
+    sub $t1, $t1, $t0      
+    
+spaces:
+    beqz $t1, stars        
+    li $v0, 11
+    li $a0, ' '           
+    syscall
+    addi $t1, $t1, -1
+    j spaces
+
+stars:
+    # Print stars
+    li $t2, 0              
+    
+print_star:
+    beq $t2, $t0, next    
+    li $v0, 11
+    li $a0, '*'           
+    syscall
+    li $a0, ' '            
+    syscall
+    addi $t2, $t2, 1
+    j print_star
+
+next:
+    li $v0, 11
+    li $a0, '\n'           
+    syscall
+    addi $t0, $t0, 1       
+    j loop
+
+exit:
+    li $v0, 10             
+    syscall
+
+
+
+
+
+
+
+
 /////////////////////////////////////swap
 .text
 .globl main
